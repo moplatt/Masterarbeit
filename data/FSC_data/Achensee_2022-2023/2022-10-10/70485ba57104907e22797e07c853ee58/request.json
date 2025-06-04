@@ -1,0 +1,64 @@
+{
+    "request": {
+        "headers": {
+            "accept": "image/tiff",
+            "content-type": "application/json"
+        },
+        "payload": {
+            "evalscript": "\n//VERSION=3\nfunction setup() {\n  return {\n    input: [\"B03\", \"B11\", \"SCL\"],\n    output: { bands: 1, sampleType: \"FLOAT32\" }\n  };\n}\n\nfunction evaluatePixel(sample) {\n  let ndsi = (sample.B03 - sample.B11) / (sample.B03 + sample.B11);\n  let image_mask = sample.SCL;\n\n  // Mask values: adjust as needed\n  let mask_values = [1,6,8,9];\n\n  // FSC thresholds\n  let ndsi_min = 0.1;\n  let ndsi_max = 0.6;\n\n  // Calculate FSC\n  let fsc = 0.0;\n  if (ndsi <= ndsi_min) {\n    fsc = 0.0;\n  } else if (ndsi >= ndsi_max) {\n    fsc = 1.0;\n  } else {\n    fsc = (ndsi - ndsi_min) / (ndsi_max - ndsi_min);\n  }\n\n  // Mask out unwanted pixels\n  let fsc_masked = mask_values.includes(image_mask) ? NaN : fsc;\n\n  return [fsc_masked];\n}\n",
+            "input": {
+                "bounds": {
+                    "bbox": [
+                        688675.0,
+                        5250625.0,
+                        710875.0,
+                        5274625.0
+                    ],
+                    "properties": {
+                        "crs": "http://www.opengis.net/def/crs/EPSG/0/32632"
+                    }
+                },
+                "data": [
+                    {
+                        "dataFilter": {
+                            "timeRange": {
+                                "from": "2022-10-10T00:00:00Z",
+                                "to": "2022-10-10T23:59:59Z"
+                            }
+                        },
+                        "type": "sentinel-2-l2a"
+                    }
+                ]
+            },
+            "output": {
+                "height": 1200,
+                "responses": [
+                    {
+                        "format": {
+                            "type": "image/tiff"
+                        },
+                        "identifier": "default"
+                    }
+                ],
+                "width": 1110
+            }
+        },
+        "timestamp": "2025-06-03T14:58:43.726934",
+        "url": "https://sh.dataspace.copernicus.eu/api/v1/process"
+    },
+    "response": {
+        "elapsed": 1.418999,
+        "headers": {
+            "access-control-allow-credentials": "true",
+            "access-control-allow-headers": "origin,content-type,accept,accept-crs,authorization,cache-control",
+            "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+            "access-control-allow-origin": "*",
+            "access-control-max-age": "3600",
+            "content-type": "image/tiff",
+            "date": "Tue, 03 Jun 2025 12:58:42 GMT",
+            "transfer-encoding": "chunked",
+            "x-processingunits-spent": "10.162353515625"
+        },
+        "status_code": 200
+    }
+}
